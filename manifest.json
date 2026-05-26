@@ -2,15 +2,11 @@
   "manifest_version": 3,
   "name": "LinkedIn Connection Tracker",
   "version": "1.0.0",
-  "description": "Track LinkedIn connection requests with reasons, statuses, task completion, and CSV export.",
+  "description": "Track why you connect with people on LinkedIn. Prompts for a reason before sending connection requests and monitors status changes.",
   "permissions": ["storage", "downloads", "activeTab"],
   "host_permissions": ["*://*.linkedin.com/*"],
   "background": {
     "service_worker": "background.js"
-  },
-  "action": {
-    "default_title": "LinkedIn Connection Tracker",
-    "default_popup": "popup.html"
   },
   "content_scripts": [
     {
@@ -19,5 +15,10 @@
       "css": ["content.css"],
       "run_at": "document_idle"
     }
-  ]
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "LinkedIn Connection Tracker"
+  },
+  "icons": {}
 }
