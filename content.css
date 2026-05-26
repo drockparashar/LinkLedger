@@ -1,0 +1,127 @@
+#liconn-track-modal-root {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+}
+
+#liconn-track-modal-root .liconn-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(2px);
+}
+
+#liconn-track-modal-root .liconn-modal {
+  position: relative;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 28px 32px;
+  width: 420px;
+  max-width: 90vw;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  animation: liconn-slide-in 0.2s ease-out;
+}
+
+@keyframes liconn-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+#liconn-track-modal-root .liconn-modal h2 {
+  margin: 0 0 6px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #191919;
+  line-height: 1.3;
+}
+
+#liconn-track-modal-root .liconn-subtitle {
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: #555;
+  line-height: 1.4;
+}
+
+#liconn-track-modal-root .liconn-subtitle strong {
+  color: #0a66c2;
+}
+
+#liconn-track-modal-root textarea {
+  display: block;
+  width: 100%;
+  min-height: 80px;
+  padding: 12px 14px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  line-height: 1.5;
+  color: #191919;
+  background: #f9fafb;
+  resize: vertical;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-sizing: border-box;
+}
+
+#liconn-track-modal-root textarea:focus {
+  outline: none;
+  border-color: #0a66c2;
+  box-shadow: 0 0 0 3px rgba(10, 102, 194, 0.15);
+  background: #ffffff;
+}
+
+#liconn-track-modal-root textarea.liconn-error {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+
+#liconn-track-modal-root .liconn-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+#liconn-track-modal-root .liconn-actions button {
+  padding: 9px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 24px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+  font-family: inherit;
+}
+
+#liconn-track-modal-root #liconn-cancel {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+#liconn-track-modal-root #liconn-cancel:hover {
+  background: #e5e7eb;
+}
+
+#liconn-track-modal-root #liconn-save {
+  background: #0a66c2;
+  color: #ffffff;
+}
+
+#liconn-track-modal-root #liconn-save:hover {
+  background: #004182;
+}
+
+#liconn-track-modal-root #liconn-save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
