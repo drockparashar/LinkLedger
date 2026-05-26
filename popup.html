@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LinkedIn Connection Tracker</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 420px;
+      min-height: 300px;
+      max-height: 520px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 13px;
+      color: #1f2937;
+      background: #f9fafb;
+      overflow-y: auto;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: #0a66c2;
+      color: #fff;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    header h1 {
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    header .stats {
+      font-size: 12px;
+      opacity: 0.85;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      padding: 10px 16px;
+      background: #fff;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .toolbar input {
+      flex: 1;
+      padding: 7px 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 12px;
+      outline: none;
+    }
+
+    .toolbar input:focus {
+      border-color: #0a66c2;
+      box-shadow: 0 0 0 2px rgba(10,102,194,0.12);
+    }
+
+    .toolbar button {
+      padding: 7px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #0a66c2;
+      color: #fff;
+      white-space: nowrap;
+      transition: background 0.15s;
+    }
+
+    .toolbar button:hover {
+      background: #004182;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: #6b7280;
+    }
+
+    .empty-state p {
+      margin-top: 8px;
+      font-size: 13px;
+    }
+
+    .connection-list {
+      padding: 8px 0;
+    }
+
+    .connection-item {
+      display: grid;
+      grid-template-columns: 24px 1fr auto;
+      align-items: start;
+      gap: 10px;
+      padding: 10px 16px;
+      border-bottom: 1px solid #f3f4f6;
+      transition: background 0.1s;
+    }
+
+    .connection-item:hover {
+      background: #f3f4f6;
+    }
+
+    .connection-item input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      margin-top: 2px;
+      accent-color: #0a66c2;
+      cursor: pointer;
+    }
+
+    .connection-info {
+      min-width: 0;
+    }
+
+    .connection-info .name {
+      font-weight: 600;
+      font-size: 13px;
+      color: #111827;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .connection-info .name a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .connection-info .name a:hover {
+      text-decoration: underline;
+      color: #0a66c2;
+    }
+
+    .connection-info .reason {
+      font-size: 12px;
+      color: #4b5563;
+      margin-top: 2px;
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .connection-meta {
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .connection-meta .status {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+
+    .status-pending {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .status-connected {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .connection-meta .date {
+      display: block;
+      font-size: 11px;
+      color: #9ca3af;
+      margin-top: 4px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #111827;
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 12px;
+      opacity: 0;
+      transition: opacity 0.2s;
+      pointer-events: none;
+    }
+
+    .toast.visible {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Connection Tracker</h1>
+    <span class="stats" id="stats"></span>
+  </header>
+  <div class="toolbar">
+    <input type="text" id="search" placeholder="Search by name or reason...">
+    <button id="export-btn">Export CSV</button>
+  </div>
+  <div id="content"></div>
+  <div class="toast" id="toast"></div>
+  <script src="popup.js"></script>
+</body>
+</html>
