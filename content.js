@@ -3,11 +3,11 @@
 (() => {
   const STORAGE_KEY = 'linkedinConnections';
   const MODAL_ROOT_ID = 'liconn-track-modal-root';
-  const PROCESSED_ATTR = 'data-liconn-tracked';
   const BYPASS_FLAG = '__liconnBypass';
 
   let lastUrl = location.href;
   let debounceTimer = null;
+  let activeEscHandler = null;
 
   // --- Utilities ---
 
@@ -25,20 +25,71 @@
     return title || 'Unknown';
   }
 
+  function getConnectButtonText(btn) {
+    const spans = btn.querySelectorAll('span');
+    for (const span of spans) {
+      const text = span.textContent.trim();
+      if (/^connect$/i.test(text)) return text;
+    }
+    const directText = btn.textContent.trim();
+    if (/^connect$/i.test(directText)) return directText;
+    return null;
+  }
+
   function isConnectButton(btn) {
-    if (btn.getAttribute(PROCESSED_ATTR)) return false;
+    if (btn.tagName !== 'BUTTON') return false;
+
     const ariaLabel = (btn.getAttribute('aria-label') || '').toLowerCase();
     if (ariaLabel.includes('disconnect') || ariaLabel.includes('pending') || ariaLabel.includes('connected')) return false;
-    if (ariaLabel.includes('connect')) return true;
-    const span = btn.querySelector('span');
-    const text = (span ? span.textContent : btn.textContent || '').trim();
-    if (/^connect$/i.test(text)) return true;
+    if (ariaLabel.includes('connect') || ariaLabel.includes('invite') && ariaLabel.includes('connect')) return true;
+
+    if (getConnectButtonText(btn)) return true;
+
     return false;
+  }
+
+  function findConnectButton(target) {
+    let el = target;
+    while (el && el !== document.body) {
+      if (el.tagName === 'BUTTON' && isConnectButton(el)) return el;
+      el = el.parentElement;
+    }
+    return null;
+  }
+
+  function getNameFromNearestContext(btn) {
+    const card = btn.closest('[data-field]') ||
+                 btn.closest('.entity-result__item') ||
+                 btn.closest('.discover-entity-type-card') ||
+                 btn.closest('li');
+    if (card) {
+      const nameEl = card.querySelector('span[aria-hidden="true"]') ||
+                     card.querySelector('.entity-result__title-text a span') ||
+                     card.querySelector('a[href*="/in/"] span');
+      if (nameEl && nameEl.textContent.trim()) return nameEl.textContent.trim();
+    }
+    return null;
+  }
+
+  function getProfileUrlFromNearestContext(btn) {
+    const card = btn.closest('[data-field]') ||
+                 btn.closest('.entity-result__item') ||
+                 btn.closest('.discover-entity-type-card') ||
+                 btn.closest('li');
+    if (card) {
+      const link = card.querySelector('a[href*="/in/"]');
+      if (link) {
+        const url = new URL(link.href);
+        const cleanPath = url.pathname.replace(/\/+$/, '');
+        return url.origin + cleanPath;
+      }
+    }
+    return null;
   }
 
   function isAlreadyConnected() {
     const buttons = document.querySelectorAll(
-      'section.pv-top-card button, .pv-top-card-v2-ctas button, .pvs-profile-actions button'
+      'section.pv-top-card button, .pv-top-card-v2-ctas button, .pvs-profile-actions button, .pv-top-card__links button'
     );
     for (const btn of buttons) {
       const text = (btn.textContent || '').trim().toLowerCase();
@@ -97,8 +148,6 @@
 
   // --- Modal ---
 
-  let activeEscHandler = null;
-
   function removeModal() {
     const existing = document.getElementById(MODAL_ROOT_ID);
     if (existing) existing.remove();
@@ -111,8 +160,8 @@
   function showModal(originalButton) {
     removeModal();
 
-    const profileUrl = getProfileUrl() || location.origin + location.pathname.replace(/\/+$/, '');
-    const profileName = getProfileName();
+    const profileUrl = getProfileUrl() || getProfileUrlFromNearestContext(originalButton) || (location.origin + location.pathname.replace(/\/+$/, ''));
+    const profileName = getProfileUrl() ? getProfileName() : (getNameFromNearestContext(originalButton) || getProfileName());
 
     const root = document.createElement('div');
     root.id = MODAL_ROOT_ID;
@@ -169,7 +218,7 @@
 
       originalButton[BYPASS_FLAG] = true;
       originalButton.click();
-      delete originalButton[BYPASS_FLAG];
+      setTimeout(() => { delete originalButton[BYPASS_FLAG]; }, 500);
     });
   }
 
@@ -179,26 +228,17 @@
     return div.innerHTML;
   }
 
-  // --- Button interception ---
+  // --- Document-level event delegation (capturing phase) ---
 
-  function interceptConnectButtons() {
-    const buttons = document.querySelectorAll('button');
-    for (const btn of buttons) {
-      if (!isConnectButton(btn)) continue;
-      btn.setAttribute(PROCESSED_ATTR, 'true');
+  document.addEventListener('click', (e) => {
+    const btn = findConnectButton(e.target);
+    if (!btn) return;
+    if (btn[BYPASS_FLAG]) return;
 
-      btn.addEventListener(
-        'click',
-        (e) => {
-          if (btn[BYPASS_FLAG]) return;
-          e.stopImmediatePropagation();
-          e.preventDefault();
-          showModal(btn);
-        },
-        true
-      );
-    }
-  }
+    e.stopImmediatePropagation();
+    e.preventDefault();
+    showModal(btn);
+  }, true);
 
   // --- SPA navigation detection ---
 
@@ -207,7 +247,6 @@
     if (currentUrl === lastUrl) return;
     lastUrl = currentUrl;
     checkAndUpdateStatus();
-    interceptConnectButtons();
   }
 
   // --- MutationObserver (debounced) ---
@@ -216,15 +255,13 @@
     if (debounceTimer) clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
       onUrlChange();
-      interceptConnectButtons();
       checkAndUpdateStatus();
-    }, 300);
+    }, 400);
   }
 
   const observer = new MutationObserver(onDomMutation);
   observer.observe(document.body, { childList: true, subtree: true });
 
   // --- Initial run ---
-  interceptConnectButtons();
   checkAndUpdateStatus();
 })();
