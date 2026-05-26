@@ -28,7 +28,8 @@
   function isConnectButton(btn) {
     if (btn.getAttribute(PROCESSED_ATTR)) return false;
     const ariaLabel = (btn.getAttribute('aria-label') || '').toLowerCase();
-    if (ariaLabel.includes('connect') && !ariaLabel.includes('pending')) return true;
+    if (ariaLabel.includes('disconnect') || ariaLabel.includes('pending') || ariaLabel.includes('connected')) return false;
+    if (ariaLabel.includes('connect')) return true;
     const span = btn.querySelector('span');
     const text = (span ? span.textContent : btn.textContent || '').trim();
     if (/^connect$/i.test(text)) return true;
@@ -96,9 +97,15 @@
 
   // --- Modal ---
 
+  let activeEscHandler = null;
+
   function removeModal() {
     const existing = document.getElementById(MODAL_ROOT_ID);
     if (existing) existing.remove();
+    if (activeEscHandler) {
+      document.removeEventListener('keydown', activeEscHandler);
+      activeEscHandler = null;
+    }
   }
 
   function showModal(originalButton) {
@@ -134,12 +141,10 @@
     cancelBtn.addEventListener('click', () => removeModal());
     backdrop.addEventListener('click', () => removeModal());
 
-    document.addEventListener('keydown', function escHandler(e) {
-      if (e.key === 'Escape') {
-        removeModal();
-        document.removeEventListener('keydown', escHandler);
-      }
-    });
+    activeEscHandler = (e) => {
+      if (e.key === 'Escape') removeModal();
+    };
+    document.addEventListener('keydown', activeEscHandler);
 
     saveBtn.addEventListener('click', async () => {
       const reason = textarea.value.trim();
